@@ -17,45 +17,48 @@ np.random.seed(42)
 # Test case 1
 # Real Input and Real Output
 
-# N = 30
-# P = 5
-# X = pd.DataFrame(np.random.randn(N, P))
-# y = pd.Series(np.random.randn(N))
+N = 30
+P = 5
+X = pd.DataFrame(np.random.randn(N, P))
+y = pd.Series(np.random.randn(N))
 
 # X = pd.DataFrame({0:[1,2,3,4,5,6]})
 # y = pd.Series([0,0,1,1,2,2])
 
-# for criteria in ["information_gain","gini_index"]:
-#     tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
-#     tree.fit(X, y)
-#     y_hat = tree.predict(X)
-#     merge_y = pd.concat([y, y_hat],axis = 1)
-#     # print('Merge_y',merge_y)
-#     tree.plot()
-#     print("Criteria :", criteria)
-#     print("RMSE: ", rmse(y_hat, y))
-#     print("MAE: ", mae(y_hat, y))
+for criteria in ["information_gain","gini_index"]:
+    tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
+    tree.fit(X, y)
+    y_hat = tree.predict(X)
+    merge_y = pd.concat([y, y_hat],axis = 1)
+    # print('Merge_y',merge_y)
+    tree.plot()
+    print("Criteria :", criteria)
+    print("RMSE: ", rmse(y_hat, y))
+    print("MAE: ", mae(y_hat, y))
     
 # print('Training ',pd.concat([X,y],axis = 1))
 
 # # Test case 2
 # # Real Input and Discrete Output
 
-# N = 30
-# P = 5
-# X = pd.DataFrame(np.random.randn(N, P))
-# y = pd.Series(np.random.randint(P, size=N), dtype="category")
-
-# for criteria in ["information_gain", "gini_index"]:
-#     tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
-#     tree.fit(X, y)
-#     y_hat = tree.predict(X)
-#     tree.plot()
-#     print("Criteria :", criteria)
-#     print("Accuracy: ", accuracy(y_hat, y))
-#     for cls in y.unique():
-#         print("Precision: ", precision(y_hat, y, cls))
-#         print("Recall: ", recall(y_hat, y, cls))
+N = 30
+P = 5
+X = pd.DataFrame(np.random.randn(N, P))
+y = pd.Series(np.random.randint(P, size=N), dtype="category")
+# X = pd.DataFrame([40,48,60,72,80,90])
+# y = pd.Series([0,0,1,1,1,0], dtype="category")
+# print(pd.concat([X,y], axis = 1))
+for criteria in ["information_gain","gini_index"]:
+    tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
+    tree.fit(X, y)
+    y_hat = tree.predict(X)
+    # print(y_hat)
+    tree.plot()
+    print("Criteria :", criteria)
+    print("Accuracy: ", accuracy(y_hat, y))
+    for cls in y.unique():
+        print("Precision: ", precision(y_hat, y, cls))
+        print("Recall: ", recall(y_hat, y, cls))
 
 
 # Test case 3
@@ -68,18 +71,18 @@ y = pd.Series(np.random.randint(P, size=N), dtype="category")
 # X = pd.DataFrame({0:[0,0,1,1,2,2]},dtype = 'category')
 # y = pd.Series([1,1,2,2,3,3], dtype="category")
 # print('Training ',pd.concat([X,y],axis = 1))
-# for criteria in ["information_gain", "gini_index"]:
-#     tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
-#     tree.fit(X, y)
-#     y_hat = tree.predict(X)
-#     merge_y = pd.concat([y, y_hat],axis = 1)
-#     print('Merge_y',merge_y)
-#     tree.plot()
-#     print("Criteria :", criteria)
-#     print("Accuracy: ", accuracy(y_hat, y))
-#     for cls in y.unique():
-#         print("Precision: ",'of class ',cls, precision(y_hat, y, cls))
-#         print("Recall: ", recall(y_hat, y, cls))
+for criteria in ["information_gain", "gini_index"]:
+    tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
+    tree.fit(X, y)
+    y_hat = tree.predict(X)
+    merge_y = pd.concat([y, y_hat],axis = 1)
+    # print('Merge_y',merge_y)
+    tree.plot()
+    print("Criteria :", criteria)
+    print("Accuracy: ", accuracy(y_hat, y))
+    for cls in y.unique():
+        print("Precision: ",'of class ',cls, precision(y_hat, y, cls))
+        print("Recall: ", recall(y_hat, y, cls))
 
 # Test case 4
 # Discrete Input and Real Output
@@ -89,7 +92,7 @@ P = 5
 X = pd.DataFrame({i: pd.Series(np.random.randint(P, size=N), dtype="category") for i in range(5)})
 y = pd.Series(np.random.randn(N))
 
-for criteria in ["information_gain", "gini_index"]:
+for criteria in ["information_gain"]:
     tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
     tree.fit(X, y)
     y_hat = tree.predict(X)

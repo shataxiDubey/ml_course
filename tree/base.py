@@ -66,37 +66,6 @@ class DecisionTree:
     def build_tree_diro(self, X: pd.DataFrame, y: pd.Series, depth ):
 
         if depth == self.max_depth or ((y - y.mean())**2).mean() == 0 :
-            print('Y behaviour:',y,'\n')
-            print({"leaf": True, "split_value": y.mean()})
-            return {"leaf": True, "split_value": y.mean()}
-        
-        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
-
-        if best_attr is None:
-            print( {"leaf": True, "split_value": y.mean()})
-            return {"leaf": True, "split_value": y.mean()}
-
-        left, right, best_val = split_data(X, y, best_attr)
-        print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
-
-        if left[0].empty : # type: ignore
-            print("left is empty")
-            l_st = {"leaf": True, "split_value": y.mean() if(len(left[0])) else 0}
-        else: 
-            l_st = self.build_tree_riro(left[0], left[1], depth+1) # type: ignore
-        if right[0].empty: # type: ignore
-            r_st =  {"leaf": True, "split_value":  y.mean() if(len(right[0])) else 0}
-        else:
-            r_st = self.build_tree_riro(right[0], right[1], depth+1) # type: ignore
-
-        print({"leaf": False, "split_attribute": best_attr, "split_value": best_val,
-                "left_subtree": l_st, "right_subtree": r_st})
-
-        return {"leaf": False, "split_attribute": best_attr, "split_value": best_val,
-                "left_subtree": l_st, "right_subtree": r_st}
-    
-    def build_tree_rido(self, X: pd.DataFrame, y: pd.Series, depth ):
-        if depth == self.max_depth or ((y - y.mean())**2).mean() == 0 :
             # print('Y behaviour:',y,'\n')
             # print({"leaf": True, "split_value": y.mean()})
             return {"leaf": True, "split_value": y.mean()}
@@ -111,14 +80,38 @@ class DecisionTree:
         # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
 
         if left[0].empty : # type: ignore
-            # print("left length is 0")
+            # print("left is empty")
             l_st = {"leaf": True, "split_value": y.mean() if(len(left[0])) else 0}
         else: 
-            l_st = self.build_tree_riro(left[0], left[1], depth+1) # type: ignore
+            l_st = self.build_tree_diro(left[0], left[1], depth+1) # type: ignore
         if right[0].empty: # type: ignore
             r_st =  {"leaf": True, "split_value":  y.mean() if(len(right[0])) else 0}
         else:
-            r_st = self.build_tree_riro(right[0], right[1], depth+1) # type: ignore
+            r_st = self.build_tree_diro(right[0], right[1], depth+1) # type: ignore
+
+        # print({"leaf": False, "split_attribute": best_attr, "split_value": best_val,
+        #         "left_subtree": l_st, "right_subtree": r_st})
+
+        return {"leaf": False, "split_attribute": best_attr, "split_value": best_val,
+                "left_subtree": l_st, "right_subtree": r_st}
+    
+    def build_tree_rido(self, X: pd.DataFrame, y: pd.Series, depth ):
+        if depth == self.max_depth or len(y.unique()) == 1 :
+            # print('Y behaviour:',y,'\n')
+            # print({"leaf": True, "split_value": np.bincount(y).argmax()})
+            return {"leaf": True, "split_value": np.bincount(y).argmax()}
+        
+        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
+
+        if best_attr is None:
+            # print( {"leaf": True, "split_value": y.value_counts().argmax()})
+            return {"leaf": True, "split_value": y.value_counts().argmax()}
+
+        left, right, best_val = split_data(X, y, best_attr)
+        # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
+
+        l_st = self.build_tree_rido(left[0], left[1], depth+1) # type: ignore
+        r_st = self.build_tree_rido(right[0], right[1], depth+1) #type: ignore
 
         # print({"leaf": False, "split_attribute": best_attr, "split_value": best_val,
         #         "left_subtree": l_st, "right_subtree": r_st})
@@ -175,20 +168,20 @@ class DecisionTree:
         self.ytype = ytype
 
         if(self.xtype and self.ytype):
-            print('Discrete input discrete output')
+            print('Discrete input discrete output------------')
             self.tree = self.build_tree_dido(X,y,0) #done
 
         if(self.xtype and not(self.ytype)):
-            print('Discrete input real output')
+            print('Discrete input real output----------------')
             self.tree = self.build_tree_diro(X,y,0) 
             
 
         if(not(self.xtype) and self.ytype):
-            print('Real input discrete output')
+            print('Real input discrete output----------------')
             self.tree = self.build_tree_rido(X,y,0)
 
         if(not(self.xtype) and not(self.ytype)):
-            print('Real input real output')
+            print('Real input real output--------------------')
             self.tree = self.build_tree_riro(X,y,0) #done
     
 
@@ -206,8 +199,8 @@ class DecisionTree:
         # if tree_copy is not None:
         #     print('Condition', X[tree_copy['split_attribute']][0] == tree_copy['split_value'])
 
-        if(self.ytype):
-            'Discrete input discrete output'
+        if((self.xtype and self.ytype) or (self.xtype and not(self.ytype))):
+            'Discrete input discrete output & Discrete input real output'
             for i in range(len(X)):
                 # print('I value:',i)
                 tree_copy = self.tree
@@ -231,8 +224,8 @@ class DecisionTree:
                 if leaf == True and tree_copy is not None:
                         y_hat.append(tree_copy['split_value'])
 
-        if(not(self.ytype)):
-            'Real input real output'
+        if((not(self.xtype) and not(self.ytype)) or (not(self.xtype) and self.ytype)):
+            'Real input real output & Real input discrete output'
             for i in range(len(X)):
                 # print('I value:',i)
                 tree_copy = self.tree
@@ -256,7 +249,6 @@ class DecisionTree:
                 if leaf == True and tree_copy is not None:
                         y_hat.append(tree_copy['split_value'])
 
-
         y_hat = pd.Series(y_hat)
         return y_hat
 
@@ -276,12 +268,17 @@ class DecisionTree:
         dot = self.plot_tree(self.tree)
         if(self.xtype and self.ytype):
             dot.render('DecisionTree_dido', format='png', cleanup=True)
+
+        if(self.xtype and not(self.ytype)):
+            dot.render('DecisionTree_diro', format='png', cleanup=True)
+
+        if(not(self.xtype) and self.ytype):
+            dot.render('DecisionTree_rido', format='png', cleanup=True)
         
         if(not(self.xtype) and not(self.ytype)):
             dot.render('DecisionTree_riro', format='png', cleanup=True)
         
-        if(self.xtype and not(self.ytype)):
-            dot.render('DecisionTree_diro', format='png', cleanup=True)
+        
 
         
 
@@ -302,6 +299,8 @@ class DecisionTree:
                 node_label = f"Feature {tree['split_attribute']} = {tree['split_value']:.4f}"
             if(self.xtype and not(self.ytype)):
                 node_label = f"Feature {tree['split_attribute']} = {tree['split_value']:.4f}"
+            if(not(self.xtype) and self.ytype):
+                node_label = f"Feature {tree['split_attribute']} <= {tree['split_value']:.4f}"
 
             dot.node(str(id(tree)), node_label)
 

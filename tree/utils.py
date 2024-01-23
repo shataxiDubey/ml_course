@@ -53,8 +53,8 @@ def information_gain(Y: pd.Series, attr: pd.Series) -> float:
         attr_mse = pd.Series(attr_mse)   
         info_gain =((Y - Y.mean())**2).mean()  - np.sum(prob*attr_mse)
 
-    elif(ytype):
-        'discrete output'
+    elif(xtype and ytype):
+        'discrete input discrete output'
         prob = attr.value_counts(normalize=True)
         attr_entropy = {}
         for category in attr.unique():
@@ -64,8 +64,8 @@ def information_gain(Y: pd.Series, attr: pd.Series) -> float:
         attr_entropy = pd.Series(attr_entropy)   
         info_gain = entropy(Y) - np.sum(prob*attr_entropy)
 
-    elif(not(ytype)):
-        'Real output'
+    elif(not(xtype) and not(ytype)):
+        'real input Real output'
         min_mse = 999999
         # print('Attribute entering information gain: ',attr)
         for value in attr.unique():
@@ -91,6 +91,24 @@ def information_gain(Y: pd.Series, attr: pd.Series) -> float:
 
         info_gain = min_mse
         # print('Minimum RMSE', info_gain)
+    elif(not(xtype) and ytype):
+        'Real input discrete output'
+        max_info_gain = 0
+        for value in attr.unique():
+            left = Y[attr <= value]
+            right = Y[attr > value]
+
+            left_entropy = entropy(left)
+            right_entropy = entropy(right)
+
+            weighted_entropy = (len(left)*left_entropy + len(right)*right_entropy)/len(Y)
+
+            info_gain = entropy(Y) - weighted_entropy
+
+            if info_gain > max_info_gain:
+                max_info_gain = info_gain 
+
+        info_gain = max_info_gain
         
     return info_gain
 
@@ -121,15 +139,15 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         'Discrete input real output'
         info_gain = {}
         for attribute in features:
-            print('attribute number',attribute)
+            # print('attribute number',attribute)
             info_gain[attribute] = information_gain(y, X[attribute])
-            print('RMSE :',info_gain[attribute])
+            # print('RMSE :',info_gain[attribute])
         info_gain = pd.Series(info_gain)
-        print('Info gain in series:',info_gain.idxmin())
+        # print('Info gain in series:',info_gain.idxmax())
         best_attr = info_gain.idxmax()
 
     
-    elif(ytype):
+    elif(xtype and ytype):
         'Discrete input discrete output'
         info_gain = {}
         for attribute in features:
@@ -140,7 +158,16 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         # print('Info gain in series:',info_gain.idxmax())
         best_attr = info_gain.idxmax()
 
-    elif(not(ytype)):
+    elif(not(xtype) and ytype):
+        'Real input discrete output'
+        info_gain = {}
+        for attribute in features:
+            X = X.sort_values(by= attribute)
+            info_gain[attribute] = information_gain(y, X[attribute])
+        info_gain = pd.Series(info_gain)
+        best_attr = info_gain.idxmax()
+
+    elif(not(xtype) and not(ytype)):
         'Real input real output'
         info_gain = {}
         for attribute in features:
@@ -152,7 +179,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         best_attr = info_gain.idxmin()
 
 
-    print("Best attribute:", best_attr)
+    # print("Best attribute:", best_attr)
         
     return best_attr
 
@@ -192,9 +219,9 @@ def split_data(X: pd.DataFrame, y: pd.Series, attribute, value = 0):
         X_left, y_left = X[left_mask], y[left_mask]
         X_right, y_right = X[right_mask], y[right_mask]
         
-        print('best value in split data:',best_val)
+        # print('best value in split data:',best_val)
 
-    elif(ytype):
+    elif(xtype and ytype):
         'Discrete input discrete output'
         min_entropy = 9999
         for value in X[attribute].unique():
@@ -212,7 +239,33 @@ def split_data(X: pd.DataFrame, y: pd.Series, attribute, value = 0):
         X_right, y_right = X[right_mask], y[right_mask]
         # print('best value:',best_val)
 
-    elif(not(ytype)):
+    elif(not(xtype) and ytype):
+        'Real input discrete output'
+        min_entropy = 99999
+
+        for value in X[attribute].unique():
+
+            left = y[X[attribute] <= value]
+            right = y[X[attribute] > value]
+            
+            left_entropy = entropy(left)
+            right_entropy = entropy(right)
+
+            weighted_entropy = (len(left)*left_entropy + len(right)*right_entropy)/len(y)
+            # print('weighted_entropy ',weighted_entropy)
+
+            if weighted_entropy <= min_entropy:
+                min_entropy = weighted_entropy
+                best_val = value   
+        
+        left_mask = X[attribute] <= best_val
+        right_mask = ~left_mask
+
+        X_left, y_left = X[left_mask], y[left_mask]
+        X_right, y_right = X[right_mask], y[right_mask]
+        # print('best value in split data:',best_val)
+    
+    elif(not(xtype) and not(ytype)):
         'Real input real output'
         min_mse = 999999
         # print('Attribute in split data:',attribute)
