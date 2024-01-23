@@ -71,6 +71,7 @@ y = pd.Series(np.random.randint(P, size=N), dtype="category")
 # X = pd.DataFrame({0:[0,0,1,1,2,2]},dtype = 'category')
 # y = pd.Series([1,1,2,2,3,3], dtype="category")
 # print('Training ',pd.concat([X,y],axis = 1))
+
 for criteria in ["information_gain", "gini_index"]:
     tree = DecisionTree(criterion=criteria)  # Split based on Inf. Gain
     tree.fit(X, y)
