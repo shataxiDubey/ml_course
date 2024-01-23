@@ -8,13 +8,13 @@ You will be expected to use this to make trees for:
 """
 from dataclasses import dataclass
 from typing import Literal
-import graphviz
+import graphviz 
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from tree.utils import *
-import graphviz
+
 
 pd.options.mode.chained_assignment = None
 
