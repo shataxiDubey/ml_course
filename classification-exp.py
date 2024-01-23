@@ -144,6 +144,77 @@ for i in range(k):
      print(" the fold {}: accuracy: {:.4f}".format(i+1, accuracies[i]))
 #---
 
+import numpy as np
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier  # Replace with your custom DecisionTree if necessary
+
+# Define the number of folds (k)
+k = 5
+
+# Define the range of depths to try
+depths = range(2, 7
+               )
+
+# Initialize a list to store the best depth for each outer fold
+best_depths = []
+
+# Calculate the fold size for splitting
+fold_size = len(X) // k
+remainder = len(X) % k
+
+# Perform k-fold cross-validation (outer loop)
+for i in range(k):
+    # Adjust test_end for the last fold to include the remainder
+    test_start = i * fold_size
+    test_end = test_start + fold_size + (1 if i == k - 1 and remainder > 0 else 0)
+
+    # Create the test set for the outer loop
+    outer_test_set = X[test_start:test_end].reset_index(drop=True)
+    outer_test_labels = y[test_start:test_end].reset_index(drop=True)
+    
+    # Create the training set for the outer loop
+    outer_train_set = pd.concat([X[:test_start], X[test_end:]], ignore_index=True)
+    outer_train_labels = pd.concat([y[:test_start], y[test_end:]], ignore_index=True)
+
+    # Inner loop for hyperparameter tuning
+    inner_accuracies = []
+    for depth in depths:
+        inner_fold_accuracies = []
+
+        # Inner k-fold cross-validation
+        inner_fold_size = len(outer_train_set) // k
+        for j in range(k):
+            # Define indices for inner test and training sets
+            inner_test_start = j * inner_fold_size
+            inner_test_end = inner_test_start + inner_fold_size
+
+            # Create inner train and test sets
+            inner_train_set = pd.concat([outer_train_set.iloc[:inner_test_start], outer_train_set.iloc[inner_test_end:]], ignore_index=True)
+            inner_train_labels = pd.concat([outer_train_labels.iloc[:inner_test_start], outer_train_labels.iloc[inner_test_end:]], ignore_index=True)
+            inner_test_set = outer_train_set.iloc[inner_test_start:inner_test_end].reset_index(drop=True)
+            inner_test_labels = outer_train_labels.iloc[inner_test_start:inner_test_end].reset_index(drop=True)
+
+            # Train the model with the current depth
+            dt_classifier = DecisionTree(criterion='information_gain', max_depth=depth)
+            dt_classifier.fit(inner_train_set, inner_train_labels)
+
+            # Make predictions and calculate accuracy
+            inner_fold_predictions = dt_classifier.predict(inner_test_set)
+            inner_fold_accuracy = np.mean(inner_fold_predictions == inner_test_labels)
+            inner_fold_accuracies.append(inner_fold_accuracy)
+
+        # Calculate the average accuracy for this depth
+        inner_avg_accuracy = np.mean(inner_fold_accuracies)
+        inner_accuracies.append(inner_avg_accuracy)
+
+    # Find the depth that had the best average accuracy
+    best_depth = depths[np.argmax(inner_accuracies)]
+    best_depths.append(best_depth)
+
+# Determine the most frequently selected depth or average them
+optimal_depth = np.mean(best_depths)  # Average of best depths
+
+print("Optimal depth of the decision tree:", optimal_depth)
 
 
 
