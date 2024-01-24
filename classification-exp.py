@@ -114,8 +114,6 @@ fold_size = len(X) // k
 # Perform k-fold cross-validation
 for i  in range(k):
     # Split the data into training and test sets
-
-    # y = pd.Series(y, dtype = 'category')
     test_start = i * fold_size
     test_end = (i + 1) * fold_size
     test_set = X[test_start:test_end]
@@ -146,13 +144,13 @@ for i in range(k):
 
 import numpy as np
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier  # Replace with your custom DecisionTree if necessary
+
 
 # Define the number of folds (k)
 k = 5
 
 # Define the range of depths to try
-depths = range(2, 7
+depths = range(1, 7
                )
 
 # Initialize a list to store the best depth for each outer fold
