@@ -46,6 +46,47 @@ for cls in y_test.unique():
         print("Recall: ", recall(y_hat, y_test, cls))
 
 
+#------------------------------5 fold cross validation-----------------------------------------
+
+k = 5
+
+# Initialize lists to store predictions and accuracies
+predictions = {}
+accuracies = []
+
+# Calculate the size of each fold
+fold_size = len(X) // k
+
+# Perform k-fold cross-validation
+for i  in range(k):
+    # Split the data into training and test sets
+    test_start = i * fold_size
+    test_end = (i + 1) * fold_size
+    test_set = X[test_start:test_end]
+    test_set = test_set.reset_index(drop = True)
+    test_labels = y[test_start:test_end]
+    test_labels = test_labels.reset_index(drop = True)
+    
+    # Train the model
+    dt_classifier = DecisionTree(criterion='information_gain',max_depth=4)
+    # dt_classifier = DecisionTreeClassifier(random_state=42)
+    dt_classifier.fit(test_set, test_labels)
+    
+    # Make predictions on the validation set
+    fold_predictions = dt_classifier.predict(test_set)
+    
+#     # Calculate the accuracy of the fold
+    fold_accuracy = np.mean(fold_predictions == test_labels)
+    
+#     # Store the predictions and accuracy of the fold
+    predictions[i] = fold_predictions
+    accuracies.append(fold_accuracy)
+
+# # Print the predictions and accuracies of each fold
+print('Five fold Cross Validation output')
+for i in range(k):
+     print(" the fold {}: accuracy: {:.4f}".format(i+1, accuracies[i]))
+
 #----------------5 fold Nested Cross Validation-------------------------------------------------
 # Define the number of folds (k)
 k = 5
@@ -97,7 +138,7 @@ for i in range(k): # outer loop for train test split
         training_set = training_set.reset_index(drop = True)
         training_labels = training_labels.reset_index(drop = True)
 
-        depth = range(2,7)
+        depth = range(1,7)
         for d in depth:
             # Train the model
             dt_classifier = DecisionTree(criterion = 'information_gain',max_depth= d)

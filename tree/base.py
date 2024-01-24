@@ -34,25 +34,27 @@ class DecisionTree:
         self.ytype = None
 
     def build_tree_dido(self, X: pd.DataFrame, y: pd.Series, depth ):
-
+        
         if depth == self.max_depth or len(y.unique()) == 1 :
             # print('Y behaviour:',y,'\n')
             # print({"leaf": True, "split_value": np.bincount(y).argmax()})
             return {"leaf": True, "split_value": np.bincount(y).argmax()}
         
-        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
+        best_attr = opt_split_attribute(X, y, criterion = self.criterion, features= X.columns) # type: ignore
 
         if best_attr is None:
             # print( {"leaf": True, "split_value": y.value_counts().argmax()})
             return {"leaf": True, "split_value": y.value_counts().argmax()}
 
-        left, right, best_val = split_data(X, y, best_attr)
+        left, right, best_val = split_data(X, y, best_attr, self.criterion)
         # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
 
         # left[0].drop([best_attr], axis = 1, inplace = True) # type: ignore
         # right[0].drop([best_attr], axis = 1, inplace = True) # type: ignore
         # print('After dropping best attr left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
-
+        # if left[1].empty and right[1].empty:
+        #     return  {"leaf": True, "split_value":int(y[X[best_attr] == best_val].head(1))} # type: ignore
+        
         l_st = self.build_tree_dido(left[0], left[1], depth+1) # type: ignore
         r_st = self.build_tree_dido(right[0], right[1], depth+1) # type: ignore
 
@@ -70,13 +72,13 @@ class DecisionTree:
             # print({"leaf": True, "split_value": y.mean()})
             return {"leaf": True, "split_value": y.mean()}
         
-        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
+        best_attr = opt_split_attribute(X, y, criterion = self.criterion, features= X.columns) # type: ignore
 
         if best_attr is None:
             # print( {"leaf": True, "split_value": y.mean()})
             return {"leaf": True, "split_value": y.mean()}
 
-        left, right, best_val = split_data(X, y, best_attr)
+        left, right, best_val = split_data(X, y, best_attr, self.criterion)
         # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
 
         if left[0].empty : # type: ignore
@@ -101,18 +103,18 @@ class DecisionTree:
             # print({"leaf": True, "split_value": np.bincount(y).argmax()})
             return {"leaf": True, "split_value": np.bincount(y).argmax()}
         
-        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
+        best_attr = opt_split_attribute(X, y, criterion = self.criterion, features= X.columns) # type: ignore
 
         if best_attr is None:
             # print( {"leaf": True, "split_value": y.value_counts().argmax()})
             return {"leaf": True, "split_value": y.value_counts().argmax()}
 
-        left, right, best_val = split_data(X, y, best_attr)
+        left, right, best_val = split_data(X, y, best_attr, self.criterion)
         # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
 
         l_st = self.build_tree_rido(left[0], left[1], depth+1) # type: ignore
         r_st = self.build_tree_rido(right[0], right[1], depth+1) #type: ignore
-
+        
         # print({"leaf": False, "split_attribute": best_attr, "split_value": best_val,
         #         "left_subtree": l_st, "right_subtree": r_st})
 
@@ -126,13 +128,13 @@ class DecisionTree:
             # print({"leaf": True, "split_value": y.mean()})
             return {"leaf": True, "split_value": y.mean()}
         
-        best_attr = opt_split_attribute(X, y, criterion='', features= X.columns) # type: ignore
+        best_attr = opt_split_attribute(X, y, criterion = self.criterion, features= X.columns) # type: ignore
 
         if best_attr is None:
             # print( {"leaf": True, "split_value": y.mean()})
             return {"leaf": True, "split_value": y.mean()}
 
-        left, right, best_val = split_data(X, y, best_attr)
+        left, right, best_val = split_data(X, y, best_attr, self.criterion)
         # print('left X:',left[0],'\nleft Y:',left[1],'\nright X:',right[0],'\nright y:',right[1])
 
         if left[0].empty : # type: ignore
@@ -196,8 +198,7 @@ class DecisionTree:
 
         # print('self tree:',self.tree)
         # print('length of X:',len(X))
-        # if tree_copy is not None:
-        #     print('Condition', X[tree_copy['split_attribute']][0] == tree_copy['split_value'])
+        
 
         if((self.xtype and self.ytype) or (self.xtype and not(self.ytype))):
             'Discrete input discrete output & Discrete input real output'

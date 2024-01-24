@@ -30,10 +30,11 @@ def gini_index(Y: pd.Series) -> float:
     Function to calculate the gini index
     """
     y = Y.value_counts(normalize=True)
-    return (y*(1-y)).sum()
+    # return (y*(1-y)).sum()
+    return (y*y).sum()
 
 
-def information_gain(Y: pd.Series, attr: pd.Series) -> float:
+def information_gain(Y: pd.Series, attr: pd.Series, criterion) -> float:
     """
     Function to calculate the information gain (information gain from each attribute)
     """
@@ -140,7 +141,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         info_gain = {}
         for attribute in features:
             # print('attribute number',attribute)
-            info_gain[attribute] = information_gain(y, X[attribute])
+            info_gain[attribute] = information_gain(y, X[attribute],criterion)
             # print('RMSE :',info_gain[attribute])
         info_gain = pd.Series(info_gain)
         # print('Info gain in series:',info_gain.idxmax())
@@ -152,7 +153,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         info_gain = {}
         for attribute in features:
             # print('attribute number',attribute)
-            info_gain[attribute] = information_gain(y, X[attribute])
+            info_gain[attribute] = information_gain(y, X[attribute],criterion)
             # print(info_gain[attribute])
         info_gain = pd.Series(info_gain)
         # print('Info gain in series:',info_gain.idxmax())
@@ -163,7 +164,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         info_gain = {}
         for attribute in features:
             X = X.sort_values(by= attribute)
-            info_gain[attribute] = information_gain(y, X[attribute])
+            info_gain[attribute] = information_gain(y, X[attribute],criterion)
         info_gain = pd.Series(info_gain)
         best_attr = info_gain.idxmax()
 
@@ -172,7 +173,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
         info_gain = {}
         for attribute in features:
             # print('attribute number',attribute)
-            info_gain[attribute] = information_gain(y, X[attribute])
+            info_gain[attribute] = information_gain(y, X[attribute],criterion)
             # print('RMSE :',info_gain[attribute])
         info_gain = pd.Series(info_gain)
         # print('Info gain in series:',info_gain.idxmin())
@@ -184,7 +185,7 @@ def opt_split_attribute(X: pd.DataFrame, y: pd.Series, criterion, features: pd.S
     return best_attr
 
 
-def split_data(X: pd.DataFrame, y: pd.Series, attribute, value = 0):
+def split_data(X: pd.DataFrame, y: pd.Series, attribute, criterion , value = 0 ):
     """
     Funtion to split the data according to an attribute.
     If needed you can split this function into 2, one for discrete and one for real valued features.
@@ -228,6 +229,10 @@ def split_data(X: pd.DataFrame, y: pd.Series, attribute, value = 0):
             index = X[attribute] == value
             target_var = y[index]
             val_entropy = entropy(target_var)
+            # if criterion == 'information_gain':
+            #     val_entropy = entropy(target_var)
+            # else:
+            #     val_entropy = gini_index(target_var)
             if val_entropy < min_entropy:
                 min_entropy = val_entropy
                 best_val = value
