@@ -141,7 +141,7 @@ for i  in range(k):
 
 # # Print the predictions and accuracies of each fold
 for i in range(k):
-     print(" the fold {}: accuracy: {:.4f}".format(i+1, accuracies[i]))
+     print(" the fold {}: accuracy: {:.5f}".format(i+1, accuracies[i]))
 #---
 
 import numpy as np
